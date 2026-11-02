@@ -19,7 +19,7 @@
       position: relative;
     }
 
-    /* Overlay หน้าแรกเปิดการ์ด */
+    /* Overlay หน้าแรก */
     .start-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -141,26 +141,30 @@
       display: flex; align-items: center; justify-content: center;
       color: white; font-size: 10px;
       animation: spin 4s linear infinite;
+      animation-play-state: paused;
     }
+    .vinyl-icon.playing { animation-play-state: running; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
     .song-title { font-size: 0.85rem; font-weight: 600; color: #d63031; }
 
-    /* Frame YouTube */
-    #player-container {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      overflow: hidden;
+    .play-btn {
+      background: #ff7675;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-family: 'Mali', cursive;
+      font-size: 0.85rem;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
   <!-- Overlay หน้าแรก -->
-  <div class="start-overlay" id="startOverlay" onclick="startCardAndMusic()">
+  <div class="start-overlay" id="startOverlay" onclick="openCard()">
     <div style="font-size: 3rem; margin-bottom: 15px;">🌻✨</div>
-    <button class="start-card-btn">กดเพื่อเปิดการ์ด 💕</button>
+    <button class="start-card-btn">กดเพื่อเปิดการ์ดและฟังเพลง oasis 💕</button>
   </div>
 
   <div class="main-container">
@@ -218,27 +222,54 @@
       <div class="salutation">Dear พี่ปลื้ม,</div>
       <div class="body-text">2เดือนละไวจัง ขอโทษที่บางวันไม่น่ารัก เค้ารักพี่ปลื้มที่สุด มาต่อสัญญาค่ะ 💕</div>
       <div class="valediction">Sincerely,</div>
-      <div class="sign-off">คีมมมมมม</div>
+      <div class="sign-off">คนน่ารักที่รักเธอ</div>
     </div>
 
     <div class="music-player-bar">
       <div class="song-info">
-        <div class="vinyl-icon">🎵</div>
+        <div class="vinyl-icon" id="vinylIcon">🎵</div>
         <div>
           <div class="song-title">oasis - Atom / D Gerrard</div>
-          <div style="font-size: 0.7rem; color: #636e72;">Playing Youtube Music...</div>
+          <div style="font-size: 0.7rem; color: #636e72;">Background Music</div>
         </div>
       </div>
+      <button class="play-btn" id="playBtn" onclick="toggleAudio()">⏸ PAUSE</button>
     </div>
   </div>
 
-  <div id="player-container"></div>
+  <!-- Audio Fast Direct Link Preloaded -->
+  <audio id="bgMusic" loop preload="auto" src="https://my.mixtape.moe/oasis_atom.mp3"></audio>
 
   <script>
-    function startCardAndMusic() {
+    const audio = document.getElementById('bgMusic');
+    const vinylIcon = document.getElementById('vinylIcon');
+    const playBtn = document.getElementById('playBtn');
+
+    // พยายาม Preload เสียงตั้งแต่หน้าเว็บเริ่มโหลด
+    window.addEventListener('load', () => {
+      audio.load();
+    });
+
+    function openCard() {
       document.getElementById('startOverlay').classList.add('hidden');
-      const container = document.getElementById('player-container');
-      container.innerHTML = `<iframe width="560" height="315" src="https://www.youtube.com/embed/rPZIiRQNXjk?autoplay=1&loop=1&playlist=rPZIiRQNXjk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      audio.play().then(() => {
+        vinylIcon.classList.add('playing');
+        playBtn.innerText = '⏸ PAUSE';
+      }).catch(err => {
+        console.log('Audio error:', err);
+      });
+    }
+
+    function toggleAudio() {
+      if (audio.paused) {
+        audio.play();
+        vinylIcon.classList.add('playing');
+        playBtn.innerText = '⏸ PAUSE';
+      } else {
+        audio.pause();
+        vinylIcon.classList.remove('playing');
+        playBtn.innerText = '▶ PLAY';
+      }
     }
 
     function createPetals() {
