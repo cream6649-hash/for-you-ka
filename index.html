@@ -121,51 +121,34 @@
     .valediction { font-weight: 700; text-align: right; }
     .sign-off { text-align: right; font-size: 0.95rem; margin-top: 4px; }
 
-    /* Music Player Bar */
+    /* YouTube Music Display */
     .music-player-bar {
       width: 100%;
       background: #fff0f3;
       border-radius: 12px;
       padding: 10px 15px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
       margin-top: 20px;
       border: 1px solid #ffccd5;
     }
-    .song-info { display: flex; align-items: center; gap: 10px; }
-    .vinyl-icon {
-      width: 32px; height: 32px;
-      background: #2d3436; border-radius: 50%;
-      border: 2px solid #ff7675;
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 10px;
-      animation: spin 4s linear infinite;
-      animation-play-state: paused;
-    }
-    .vinyl-icon.playing { animation-play-state: running; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    .song-title { font-size: 0.85rem; font-weight: 600; color: #d63031; }
-
-    .play-btn {
-      background: #ff7675;
-      color: white;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-family: 'Mali', cursive;
+    .song-title {
       font-size: 0.85rem;
-      cursor: pointer;
+      font-weight: 600;
+      color: #d63031;
+      margin-bottom: 8px;
     }
-
-    /* Hidden YouTube Iframe */
-    #yt-player-box {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
+    .yt-iframe-box {
+      width: 100%;
+      height: 80px;
+      border-radius: 8px;
       overflow: hidden;
-      pointer-events: none;
+    }
+    .yt-iframe-box iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
@@ -236,72 +219,16 @@
     </div>
 
     <div class="music-player-bar">
-      <div class="song-info">
-        <div class="vinyl-icon" id="vinylIcon">🎵</div>
-        <div>
-          <div class="song-title">oasis - Atom / D Gerrard</div>
-          <div style="font-size: 0.7rem; color: #636e72;">Background Music</div>
-        </div>
-      </div>
-      <button class="play-btn" id="playBtn" onclick="toggleMusic()">▶ PLAY</button>
+      <div class="song-title">🎵 oasis - Atom / D Gerrard</div>
+      <div class="yt-iframe-box" id="ytContainer"></div>
     </div>
   </div>
 
-  <div id="yt-player-box"></div>
-
   <script>
-    let player;
-    let isPlaying = false;
-
-    // Load YouTube IFrame Player API
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('yt-player-box', {
-        height: '0',
-        width: '0',
-        videoId: 'rPZIiRQNXjk',
-        playerVars: {
-          'autoplay': 0,
-          'controls': 0,
-          'loop': 1,
-          'playlist': 'rPZIiRQNXjk'
-        },
-        events: {
-          'onStateChange': onPlayerStateChange
-        }
-      });
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data == YT.PlayerState.PLAYING) {
-        isPlaying = true;
-        document.getElementById('playBtn').innerText = '⏸ PAUSE';
-        document.getElementById('vinylIcon').classList.add('playing');
-      } else {
-        isPlaying = false;
-        document.getElementById('playBtn').innerText = '▶ PLAY';
-        document.getElementById('vinylIcon').classList.remove('playing');
-      }
-    }
-
     function openCard() {
       document.getElementById('startOverlay').classList.add('hidden');
-      if (player && typeof player.playVideo === 'function') {
-        player.playVideo();
-      }
-    }
-
-    function toggleMusic() {
-      if (!player || typeof player.playVideo !== 'function') return;
-      if (isPlaying) {
-        player.pauseVideo();
-      } else {
-        player.playVideo();
-      }
+      const container = document.getElementById('ytContainer');
+      container.innerHTML = `<iframe src="https://www.youtube.com/embed/rPZIiRQNXjk?autoplay=1&playsinline=1" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
     }
 
     function createPetals() {
