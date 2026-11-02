@@ -19,7 +19,7 @@
       position: relative;
     }
 
-    /* Overlay หน้าแรก */
+    /* Start Overlay */
     .start-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -157,6 +157,16 @@
       font-size: 0.85rem;
       cursor: pointer;
     }
+
+    /* Hidden YouTube Iframe */
+    #yt-player-box {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -233,42 +243,64 @@
           <div style="font-size: 0.7rem; color: #636e72;">Background Music</div>
         </div>
       </div>
-      <button class="play-btn" id="playBtn" onclick="toggleAudio()">⏸ PAUSE</button>
+      <button class="play-btn" id="playBtn" onclick="toggleMusic()">▶ PLAY</button>
     </div>
   </div>
 
-  <!-- Audio Fast Direct Link Preloaded -->
-  <audio id="bgMusic" loop preload="auto" src="https://my.mixtape.moe/oasis_atom.mp3"></audio>
+  <div id="yt-player-box"></div>
 
   <script>
-    const audio = document.getElementById('bgMusic');
-    const vinylIcon = document.getElementById('vinylIcon');
-    const playBtn = document.getElementById('playBtn');
+    let player;
+    let isPlaying = false;
 
-    // พยายาม Preload เสียงตั้งแต่หน้าเว็บเริ่มโหลด
-    window.addEventListener('load', () => {
-      audio.load();
-    });
+    // Load YouTube IFrame Player API
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-    function openCard() {
-      document.getElementById('startOverlay').classList.add('hidden');
-      audio.play().then(() => {
-        vinylIcon.classList.add('playing');
-        playBtn.innerText = '⏸ PAUSE';
-      }).catch(err => {
-        console.log('Audio error:', err);
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('yt-player-box', {
+        height: '0',
+        width: '0',
+        videoId: 'rPZIiRQNXjk',
+        playerVars: {
+          'autoplay': 0,
+          'controls': 0,
+          'loop': 1,
+          'playlist': 'rPZIiRQNXjk'
+        },
+        events: {
+          'onStateChange': onPlayerStateChange
+        }
       });
     }
 
-    function toggleAudio() {
-      if (audio.paused) {
-        audio.play();
-        vinylIcon.classList.add('playing');
-        playBtn.innerText = '⏸ PAUSE';
+    function onPlayerStateChange(event) {
+      if (event.data == YT.PlayerState.PLAYING) {
+        isPlaying = true;
+        document.getElementById('playBtn').innerText = '⏸ PAUSE';
+        document.getElementById('vinylIcon').classList.add('playing');
       } else {
-        audio.pause();
-        vinylIcon.classList.remove('playing');
-        playBtn.innerText = '▶ PLAY';
+        isPlaying = false;
+        document.getElementById('playBtn').innerText = '▶ PLAY';
+        document.getElementById('vinylIcon').classList.remove('playing');
+      }
+    }
+
+    function openCard() {
+      document.getElementById('startOverlay').classList.add('hidden');
+      if (player && typeof player.playVideo === 'function') {
+        player.playVideo();
+      }
+    }
+
+    function toggleMusic() {
+      if (!player || typeof player.playVideo !== 'function') return;
+      if (isPlaying) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
       }
     }
 
